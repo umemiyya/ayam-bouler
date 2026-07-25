@@ -271,7 +271,7 @@ export default function AdminDashboardPage() {
     } else {
       const message =
         finalResult.status === "not_a_chicken"
-          ? "Gambar ini tampaknya tidak mengandung ayam."
+          ? "Gambar ini tampaknya tidak mengandung ayam boiler."
           : finalResult.status === "timeout"
             ? "Proses deteksi memakan waktu lebih lama dari perkiraan."
             : finalResult.status === "network_error"

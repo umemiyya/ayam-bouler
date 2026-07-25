@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+/*
+  Count AI — design tokens
+  Palette: latar putih bersih, dengan olive-brown (#80775C) sebagai warna
+  aksen fungsional (teks aktif, ikon, ring, indikator) dan krem keemasan
+  (#FAE8B4) sebagai warna soft-fill (highlight, badge, tombol solid).
+  Typography: Space Grotesk (heading & counter besar), Inter (body copy),
+  JetBrains Mono (readout: count, confidence, timestamp).
+*/
+:root {
+  --background: #ffffff;
+  --surface: #fffefb;
+  --surface-2: #fbf3dd;
+  --border-subtle: #f0e4c2;
+  --border-strong: #ddc98f;
+  --foreground: #2f2b1c;
+  --muted: #80775c;
+  --muted-2: #a99f80;
+
+  --accent: #80775c;
+  --accent-foreground: #fae8b4;
+  --accent-soft: #fae8b459;
+
+  --confirmed: #5f8f6f;
+  --confirmed-soft: #5f8f6f1a;
+  --warning: #c98a4a;
+  --warning-soft: #c98a4a1a;
+  --danger: #bd5850;
+  --danger-soft: #bd58501a;
+
+  --radius: 0.85rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-2: var(--muted-2);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-confirmed: var(--confirmed);
+  --color-confirmed-soft: var(--confirmed-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-sm: calc(var(--radius) - 6px);
+}
+
+body {
+  background:
+    radial-gradient(ellipse 1200px 600px at 15% -10%, var(--accent-soft), transparent),
+    var(--background);
+  color: var(--foreground);
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--foreground);
+}
+
+* {
+  border-color: var(--border-subtle);
+}
+
+/* Thin scrollbars menyesuaikan tema terang */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-2);
+}
+
+/* Signature motif: viewfinder corner brackets, echoing bounding box
+   deteksi pada citra ayam. */
+.viewfinder {
+  position: relative;
+}
+.viewfinder::before,
+.viewfinder::after,
+.viewfinder > .vf-tr,
+.viewfinder > .vf-bl {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--accent);
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+.viewfinder::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+  border-top-left-radius: 6px;
+}
+.viewfinder::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+  border-bottom-right-radius: 6px;
+}
+.viewfinder:hover::before,
+.viewfinder:hover::after {
+  opacity: 1;
+}
+
+/* Subtle dot-grid backdrop di belakang hero counter */
+.scan-grid {
+  background-image: radial-gradient(var(--border-strong) 1px, transparent 1px);
+  background-size: 18px 18px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 40%, black 30%, transparent 75%);
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 40%, black 30%, transparent 75%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--border-subtle) 37%, var(--surface-2) 63%);
+  background-size: 800px 100%;
+  animation: shimmer 1.6s linear infinite;
+}

@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
-      { success: false, status: "api_error", message: "AI service is currently unavailable." },
+      { success: false, status: "api_error", message: "Layanan tidak tersedia!" },
       { status: 500 }
     );
   }
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     formData = await req.formData();
   } catch {
     return NextResponse.json(
-      { success: false, status: "network_error", message: "Unable to connect to server." },
+      { success: false, status: "network_error", message: "Gagal saat koneksi ke server!" },
       { status: 400 }
     );
   }

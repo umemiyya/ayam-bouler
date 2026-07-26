@@ -16,10 +16,7 @@ export function Sidebar() {
   return (
     <aside className="flex h-screen w-64 shrink-0 fixed flex-col border-r border-[#80775C]/20 bg-white">
       <div className="flex items-center gap-2 px-6 py-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#FAE8B4] bg-[#FAE8B4]/40">
-          <ScanFace className="h-5 w-5 text-[#80775C]" />
-        </div>
-        <span className="text-sm font-bold text-[#80775C]">DeepShield AI</span>
+        <span className="text-sm font-bold text-[#80775C]">Ayam Boiler</span>
       </div>
 
       <nav className="flex-1 space-y-1 px-3">

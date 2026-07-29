@@ -19,7 +19,7 @@ const NAV_TITLES: Record<NavKey, string> = {
   dashboard: "Dashboard",
   upload: "Upload Detection",
   history: "Detection History",
-  analytics: "Analytics",
+  deteksi: "Deteksi",
   settings: "Settings",
   help: "Help",
 };

@@ -61,7 +61,7 @@ export function Sidebar({
         {!collapsed && (
           <div className="min-w-0">
             <p className="truncate font-display text-sm font-semibold leading-tight">
-              Detaksi
+              Ayam Boiler
             </p>
             <p className="truncate text-[11px] text-muted-2">Menghitung Jumlah Ayam</p>
           </div>

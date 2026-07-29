@@ -35,8 +35,8 @@ export function Header({ title, onOpenMobileNav, notificationCount = 3 }: Header
         <Menu className="h-5 w-5" />
       </button>
 
-      <h1 className="font-display text-lg font-semibold tracking-tight sm:text-xl">
-        {title}
+      <h1 className="font-display hidden  text-lg font-semibold tracking-tight sm:text-xl">
+        Ayam Boiler
       </h1>
 
       <div className="ml-auto flex items-center gap-2 sm:gap-3">

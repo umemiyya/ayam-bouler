@@ -8,7 +8,6 @@ const badges = [
   { icon: Target, label: "Akurat" },
   { icon: Zap, label: "Cepat" },
   { icon: Gauge, label: "Efisien" },
-  { icon: Radio, label: "Real-time" },
 ];
 
 export function HeroBanner() {

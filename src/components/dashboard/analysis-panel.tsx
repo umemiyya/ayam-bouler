@@ -80,6 +80,7 @@ export function AnalysisPanel({
           className="flex-1 sm:flex-none sm:min-w-64"
           disabled={!selected || isProcessing}
           onClick={onAnalyze}
+          variant={"outline"}
           aria-describedby={disabledReason ? "analyze-disabled-hint" : undefined}
         >
           {isProcessing ? (

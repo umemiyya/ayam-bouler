@@ -312,11 +312,11 @@ const [statusColors, setStatusColors] = React.useState({
             </section>
 
           {/* Bagian 2 & 3 — Unggah + Pengaturan */}
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             <section
               ref={uploadSectionRef}
               aria-label="Unggah dan pengaturan deteksi"
-              className="grid grid-cols-1 gap-4 col-span-2"
+              className="grid grid-cols-1 gap-4"
             >
             <div className="">
               {initialLoading ? (
@@ -354,16 +354,21 @@ const [statusColors, setStatusColors] = React.useState({
               )}
             </div>
           </section>
-           <section className="flex flex-col gap-6">
+           {/* <section className="flex flex-col gap-6">
               <DistributionChart data={mockDistribution} />
               <ModelPerformance metrics={mockModelPerformance} />
-              <AboutSystem />
-            </section>
+              
+            </section> */}
           </div>
 
             {/* Riwayat deteksi */}
-            <section aria-label="Riwayat deteksi">
-              <HistoryTable entries={history} onUploadFirst={scrollToUpload} />
+            <section aria-label="Riwayat deteksi" className="grid gap-6 grid-cols-3">
+              <div className="col-span-2">
+                <HistoryTable entries={history} onUploadFirst={scrollToUpload} />
+              </div>
+              <div className="col-span-1">
+              <AboutSystem />
+              </div>
             </section>
           </main>
       </div>

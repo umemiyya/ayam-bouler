@@ -17,7 +17,7 @@ export function AboutSystem() {
           <span className="text-emerald-400">YOLO v12</span> yang akurat dan
           efisien.
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex-wrap hidden gap-2">
           <Badge className="bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/15">
             Next.js
           </Badge>

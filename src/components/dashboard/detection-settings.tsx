@@ -44,7 +44,7 @@ export function DetectionSettingsPanel({
   ) => onChange({ ...settings, [key]: value });
 
   return (
-    <Card>
+    <Card className="">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           {/* <ScanLine className="h-4.5 w-4.5 text-accent" /> */}

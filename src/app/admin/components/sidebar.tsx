@@ -14,9 +14,9 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-screen w-64 shrink-0 fixed flex-col border-r border-[#80775C]/20 bg-white">
+    <aside className="flex h-screen w-64 shrink-0 fixed flex-col border-r border-border-subtle bg-surface">
       <div className="flex items-center gap-2 px-6 py-6">
-        <span className="text-sm font-bold text-[#80775C]">Ayam Boiler</span>
+        <span className="text-sm font-bold text-accent">Ayam Boiler</span>
       </div>
 
       <nav className="flex-1 space-y-1 px-3">
@@ -30,8 +30,8 @@ export function Sidebar() {
               href={item.href}
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
                 isActive
-                  ? 'bg-[#80775C] text-white'
-                  : 'text-[#80775C]/70 hover:bg-[#80775C]/5 hover:text-[#80775C]'
+                  ? 'bg-accent text-accent-foreground'
+                  : 'text-muted hover:bg-surface-2 hover:text-foreground'
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -41,7 +41,7 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="px-6 py-6 text-[11px] font-mono uppercase tracking-[0.2em] text-[#80775C]/60">
+      <div className="px-6 py-6 text-[11px] font-mono uppercase tracking-[0.2em] text-muted-2">
         Panel Admin
       </div>
     </aside>

@@ -6,13 +6,19 @@ import { Sidebar, type NavKey } from "@/components/dashboard/sidebar";
 import { Header } from "@/components/dashboard/header";
 import { StatsCardsSkeleton, UploadCardSkeleton } from "@/components/dashboard/section-skeleton";
 import { UploadZone, type SelectedFile } from "@/components/dashboard/upload-zone";
-import { DetectionSettingsPanel } from "@/components/dashboard/detection-settings";
+// import { DetectionSettingsPanel } from "@/components/dashboard/detection-settings";
 import { AnalysisPanel } from "@/components/dashboard/analysis-panel";
 import { HistoryTable } from "@/components/dashboard/history-table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { generateMockHistory, mockStats } from "@/lib/mock-data";
+import { generateMockHistory, mockStats, mockDistribution, mockModelPerformance } from "@/lib/mock-data";
 import type { DetectionResult, DetectionSettings, HistoryEntry } from "@/types/detection";
 import { useRouter } from "next/navigation";
+
+import { HeroBanner } from "@/components/dashboard/hero-banner";
+import { StatsCards } from "@/components/dashboard/stats-cards";
+import { DistributionChart } from "@/components/dashboard/distribution-chart";
+import { ModelPerformance } from "@/components/dashboard/model-performance";
+import { AboutSystem } from "@/components/dashboard/about-system";
 
 export default function AdminDashboardPage() {
   
@@ -27,11 +33,11 @@ export default function AdminDashboardPage() {
 
   // Warna thumbnail per status — sebelumnya hardcode di dalam fungsi,
   // sekarang jadi state agar bisa dikustomisasi (mis. mode gelap/terang).
-  const [statusColors, setStatusColors] = React.useState({
-    success: "#e3a53c",
-    no_chickens: "#5d6b76",
-    failed: "#e0685f",
-  });
+const [statusColors, setStatusColors] = React.useState({
+  success: "#22c55e",
+  no_chickens: "#5d6b76",
+  failed: "#ef4444",
+});
 
   // Layout / state navigasi
   const [activeNav, setActiveNav] = React.useState<NavKey>("dashboard");
@@ -287,31 +293,32 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar
-        active={activeNav}
-        onNavigate={setActiveNav}
-        collapsed={collapsed}
-        onToggleCollapsed={() => setCollapsed((c) => !c)}
-        mobileOpen={mobileOpen}
-        onCloseMobile={() => setMobileOpen(false)}
-      />
+    <Sidebar
+      collapsed={collapsed}
+      onToggleCollapsed={() => setCollapsed((c) => !c)}
+      mobileOpen={mobileOpen}
+      onCloseMobile={() => setMobileOpen(false)}
+    />
 
       <div className="flex min-h-screen flex-1 flex-col">
         <Header title={navTitles[activeNav]} onOpenMobileNav={() => setMobileOpen(true)} />
+          <div className="p-6">
+            <HeroBanner />
+          </div>
 
         <main className="flex-1 space-y-8 px-4 py-6 sm:px-6 lg:px-8">
-          {/* Bagian 1 — Statistik */}
-          {/* <section aria-label="Statistik utama">
-            {initialLoading ? <StatsCardsSkeleton /> : <StatsCards {...stats} />}
-          </section> */}
+            <section aria-label="Statistik utama">
+              {initialLoading ? <StatsCardsSkeleton /> : <StatsCards {...stats} />}
+            </section>
 
           {/* Bagian 2 & 3 — Unggah + Pengaturan */}
-          <section
-            ref={uploadSectionRef}
-            aria-label="Unggah dan pengaturan deteksi"
-            className="grid grid-cols-1 gap-4 lg:grid-cols-3"
-          >
-            <div className="lg:col-span-2">
+          <div className="grid grid-cols-3 gap-6">
+            <section
+              ref={uploadSectionRef}
+              aria-label="Unggah dan pengaturan deteksi"
+              className="grid grid-cols-1 gap-4 col-span-2"
+            >
+            <div className="">
               {initialLoading ? (
                 <UploadCardSkeleton />
               ) : (
@@ -346,21 +353,19 @@ export default function AdminDashboardPage() {
                 </Card>
               )}
             </div>
-
-            <div>
-              {initialLoading ? (
-                <UploadCardSkeleton />
-              ) : (
-                <DetectionSettingsPanel settings={settings} onChange={setSettings} disabled={isProcessing} />
-              )}
-            </div>
           </section>
+           <section className="flex flex-col gap-6">
+              <DistributionChart data={mockDistribution} />
+              <ModelPerformance metrics={mockModelPerformance} />
+              <AboutSystem />
+            </section>
+          </div>
 
-          {/* Riwayat deteksi */}
-          <section aria-label="Riwayat deteksi">
-            <HistoryTable entries={history} onUploadFirst={scrollToUpload} />
-          </section>
-        </main>
+            {/* Riwayat deteksi */}
+            <section aria-label="Riwayat deteksi">
+              <HistoryTable entries={history} onUploadFirst={scrollToUpload} />
+            </section>
+          </main>
       </div>
     </div>
   );

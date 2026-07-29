@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   UploadCloud,
@@ -9,11 +11,11 @@ import {
   Settings,
   HelpCircle,
   LogOut,
-  Bird,
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BreedInfoCard } from "./breed-info-card";
 
 export type NavKey =
   | "dashboard"
@@ -23,18 +25,16 @@ export type NavKey =
   | "settings"
   | "help";
 
-const NAV_ITEMS: { key: NavKey; label: string; icon: React.ElementType }[] = [
-  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  // { key: "upload", label: "Upload Detection", icon: UploadCloud },
-  // { key: "history", label: "Detection History", icon: History },
-  // { key: "analytics", label: "Analytics", icon: BarChart3 },
-  // { key: "settings", label: "Settings", icon: Settings },
-  // { key: "help", label: "Help", icon: HelpCircle },
+const NAV_ITEMS: { key: NavKey; label: string; icon: React.ElementType; href: string }[] = [
+  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, href: "/" },
+  { key: "history", label: "Riwayat Analisis", icon: History, href: "/riwayat" },
+  // { key: "upload", label: "Upload Detection", icon: UploadCloud, href: "/upload" },
+  // { key: "analytics", label: "Analytics", icon: BarChart3, href: "/analytics" },
+  // { key: "settings", label: "Settings", icon: Settings, href: "/settings" },
+  // { key: "help", label: "Help", icon: HelpCircle, href: "/help" },
 ];
 
 interface SidebarProps {
-  active: NavKey;
-  onNavigate: (key: NavKey) => void;
   collapsed: boolean;
   onToggleCollapsed: () => void;
   mobileOpen: boolean;
@@ -42,13 +42,13 @@ interface SidebarProps {
 }
 
 export function Sidebar({
-  active,
-  onNavigate,
   collapsed,
   onToggleCollapsed,
   mobileOpen,
   onCloseMobile,
 }: SidebarProps) {
+  const pathname = usePathname();
+
   const content = (
     <div className="flex h-full flex-col">
       <div
@@ -67,21 +67,15 @@ export function Sidebar({
         )}
       </div>
 
-      <nav
-        className="flex-1 space-y-1 overflow-y-auto p-3"
-        aria-label="Primary"
-      >
+      <nav className="flex-1 space-y-1 overflow-y-auto p-3" aria-label="Primary">
         {NAV_ITEMS.map((item) => {
-          const isActive = active === item.key;
+          const isActive = pathname === item.href;
           const Icon = item.icon;
           return (
-            <button
+            <Link
               key={item.key}
-              type="button"
-              onClick={() => {
-                onNavigate(item.key);
-                onCloseMobile();
-              }}
+              href={item.href}
+              onClick={onCloseMobile}
               aria-current={isActive ? "page" : undefined}
               title={collapsed ? item.label : undefined}
               className={cn(
@@ -97,47 +91,19 @@ export function Sidebar({
               )}
               <Icon className="h-4.5 w-4.5 shrink-0" aria-hidden="true" />
               {!collapsed && <span className="truncate">{item.label}</span>}
-            </button>
+            </Link>
           );
         })}
       </nav>
 
       <div className="space-y-1 border-t border-border-subtle p-3">
-        <button
-          type="button"
-          title={collapsed ? "Log out" : undefined}
-          className={cn(
-            "flex hidden w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-danger-soft hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
-            collapsed && "justify-center px-0"
-          )}
-        >
-          <LogOut className="h-4.5 w-4.5 shrink-0" aria-hidden="true" />
-          {!collapsed && <span>Logout</span>}
-        </button>
-        <button
-          type="button"
-          onClick={onToggleCollapsed}
-          className={cn(
-            "hidden w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-2 transition-colors hover:bg-surface-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent lg:flex",
-            collapsed && "justify-center px-0"
-          )}
-        >
-          {collapsed ? (
-            <PanelLeftOpen className="h-4.5 w-4.5 shrink-0" aria-hidden="true" />
-          ) : (
-            <>
-              <PanelLeftClose className="h-4.5 w-4.5 shrink-0" aria-hidden="true" />
-              <span>Collapse</span>
-            </>
-          )}
-        </button>
+        <BreedInfoCard/>
       </div>
     </div>
   );
 
   return (
     <>
-      {/* Desktop / tablet sidebar */}
       <aside
         className={cn(
           "sticky top-0 hidden h-screen shrink-0 border-r border-border-subtle bg-surface transition-[width] duration-200 lg:block",
@@ -147,7 +113,6 @@ export function Sidebar({
         {content}
       </aside>
 
-      {/* Mobile drawer */}
       <div
         className={cn(
           "fixed inset-0 z-50 lg:hidden",

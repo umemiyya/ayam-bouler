@@ -1,33 +1,33 @@
 @import "tailwindcss";
 
 /*
-  Count AI — design tokens
-  Palette: latar putih bersih, dengan olive-brown (#80775C) sebagai warna
-  aksen fungsional (teks aktif, ikon, ring, indikator) dan krem keemasan
-  (#FAE8B4) sebagai warna soft-fill (highlight, badge, tombol solid).
+  BroilerVision — design tokens
+  Palette: latar dark (near-black/zinc), dengan emerald green sebagai
+  aksen fungsional (teks aktif, ikon, ring, indikator, check mark) dan
+  hijau lembut sebagai soft-fill (highlight, badge, progress bar).
   Typography: Space Grotesk (heading & counter besar), Inter (body copy),
   JetBrains Mono (readout: count, confidence, timestamp).
 */
 :root {
-  --background: #ffffff;
-  --surface: #fffefb;
-  --surface-2: #fbf3dd;
-  --border-subtle: #f0e4c2;
-  --border-strong: #ddc98f;
-  --foreground: #2f2b1c;
-  --muted: #80775c;
-  --muted-2: #a99f80;
+  --background: #0a0e0d;
+  --surface: #11201b;
+  --surface-2: #16241f;
+  --border-subtle: #1f342c;
+  --border-strong: #2c4a3d;
+  --foreground: #e9f5ee;
+  --muted: #8fa89b;
+  --muted-2: #5c7568;
 
-  --accent: #80775c;
-  --accent-foreground: #fae8b4;
-  --accent-soft: #fae8b459;
+  --accent: #22c55e;
+  --accent-foreground: #0a1a0f;
+  --accent-soft: #22c55e26;
 
-  --confirmed: #5f8f6f;
-  --confirmed-soft: #5f8f6f1a;
-  --warning: #c98a4a;
-  --warning-soft: #c98a4a1a;
-  --danger: #bd5850;
-  --danger-soft: #bd58501a;
+  --confirmed: #34d399;
+  --confirmed-soft: #34d3991a;
+  --warning: #eab308;
+  --warning-soft: #eab3081a;
+  --danger: #ef4444;
+  --danger-soft: #ef44441a;
 
   --radius: 0.85rem;
 }
@@ -78,7 +78,7 @@ body {
   border-color: var(--border-subtle);
 }
 
-/* Thin scrollbars menyesuaikan tema terang */
+/* Thin scrollbars menyesuaikan tema gelap */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -108,7 +108,7 @@ body {
   width: 14px;
   height: 14px;
   border-color: var(--accent);
-  opacity: 0.55;
+  opacity: 0.65;
   transition: opacity 0.2s ease;
   pointer-events: none;
 }
@@ -157,4 +157,13 @@ body {
   background: linear-gradient(90deg, var(--surface-2) 25%, var(--border-subtle) 37%, var(--surface-2) 63%);
   background-size: 800px 100%;
   animation: shimmer 1.6s linear infinite;
+}
+
+/* Glow tipis untuk elemen "live" / status aktif, sesuai vibe referensi */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-soft); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
 }

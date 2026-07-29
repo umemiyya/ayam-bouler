@@ -302,15 +302,8 @@ const [statusColors, setStatusColors] = React.useState({
 
       <div className="flex min-h-screen flex-1 flex-col">
         <Header title={navTitles[activeNav]} onOpenMobileNav={() => setMobileOpen(true)} />
-          <div className="p-6">
-            <HeroBanner />
-          </div>
 
         <main className="flex-1 space-y-8 px-4 py-6 sm:px-6 lg:px-8">
-            <section aria-label="Statistik utama">
-              {initialLoading ? <StatsCardsSkeleton /> : <StatsCards {...stats} />}
-            </section>
-
           {/* Bagian 2 & 3 — Unggah + Pengaturan */}
           <div className="grid grid-cols-1 gap-6">
             <section
@@ -362,12 +355,9 @@ const [statusColors, setStatusColors] = React.useState({
           </div>
 
             {/* Riwayat deteksi */}
-            <section aria-label="Riwayat deteksi" className="grid gap-6 grid-cols-3">
-              <div className="col-span-2">
+            <section aria-label="Riwayat deteksi" className="">
+              <div className="">
                 <HistoryTable entries={history} onUploadFirst={scrollToUpload} />
-              </div>
-              <div className="col-span-1">
-              <AboutSystem />
               </div>
             </section>
           </main>

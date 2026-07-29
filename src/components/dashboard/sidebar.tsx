@@ -21,12 +21,13 @@ export type NavKey =
   | "dashboard"
   | "upload"
   | "history"
-  | "analytics"
+  | "deteksi"
   | "settings"
   | "help";
 
 const NAV_ITEMS: { key: NavKey; label: string; icon: React.ElementType; href: string }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, href: "/" },
+  { key: "deteksi", label: "Deteksi", icon: History, href: "/detect" },
   { key: "history", label: "Riwayat Analisis", icon: History, href: "/riwayat" },
   // { key: "upload", label: "Upload Detection", icon: UploadCloud, href: "/upload" },
   // { key: "analytics", label: "Analytics", icon: BarChart3, href: "/analytics" },
@@ -89,7 +90,6 @@ export function Sidebar({
               {isActive && (
                 <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-accent" />
               )}
-              <Icon className="h-4.5 w-4.5 shrink-0" aria-hidden="true" />
               {!collapsed && <span className="truncate">{item.label}</span>}
             </Link>
           );

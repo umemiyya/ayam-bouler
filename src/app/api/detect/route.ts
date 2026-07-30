@@ -216,7 +216,7 @@ export async function POST(req: NextRequest) {
 
     if (err instanceof Anthropic.APIError) {
       return NextResponse.json(
-        { success: false, status: "api_error", message: "AI service is currently unavailable." },
+        { success: false, status: "api_error", message: "Terdapat kesalahan jaringan." },
         { status: 502 }
       );
     }

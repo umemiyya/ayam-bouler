@@ -32,6 +32,32 @@ interface AnalysisPanelProps {
   onUploadAnother: () => void;
 }
 
+// function BoundingBoxPreview({
+//   imageUrl,
+//   detections,
+// }: {
+//   imageUrl: string;
+//   detections: Extract<DetectionResult, { status: "success" }>["detections"];
+// }) {
+//   return (
+//     <div className="relative overflow-hidden rounded-lg border border-border-subtle bg-black/40">
+//       {/* eslint-disable-next-line @next/next/no-img-element */}
+//       <img src={imageUrl} alt="Analyzed upload with detection boxes" className="block w-full" />
+//       {detections.map((d) => (
+//         <span
+//           key={d.id}
+//           className="absolute rounded-sm border-2 border-accent shadow-[0_0_0_1px_rgba(0,0,0,0.4)]"
+//           style={{
+//             left: `${d.x}%`,
+//             top: `${d.y}%`,
+//             width: `${d.width}%`,
+//             height: `${d.height}%`,
+//           }}
+//         />
+//       ))}
+//     </div>
+//   );
+// }
 function BoundingBoxPreview({
   imageUrl,
   detections,
@@ -46,14 +72,15 @@ function BoundingBoxPreview({
       {detections.map((d) => (
         <span
           key={d.id}
-          className="absolute rounded-sm border-2 border-accent shadow-[0_0_0_1px_rgba(0,0,0,0.4)]"
+          className="absolute border-yellow-300 shadow-[0_0_0_1px_rgba(0,0,0,0.4)]"
           style={{
             left: `${d.x}%`,
             top: `${d.y}%`,
             width: `${d.width}%`,
             height: `${d.height}%`,
           }}
-        />
+        >
+        </span>
       ))}
     </div>
   );
@@ -242,7 +269,7 @@ function ResultView({
         <EmptyCard
           tone="danger"
           icon={<ServerCrash className="h-8 w-8" />}
-          title="AI service is currently unavailable."
+          title="Terdapat kesalahan."
           subtitle={result.message || "Please Coba Lagi in a moment."}
           actions={
             <Button onClick={onRetry}>

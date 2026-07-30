@@ -1,87 +1,362 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
-import { Trash2 } from "lucide-react";
-import { Header } from "@/components/dashboard/header";
+import { toast } from "sonner";
 import { Sidebar, type NavKey } from "@/components/dashboard/sidebar";
-import { StatsCards } from "@/components/dashboard/stats-cards";
+import { Header } from "@/components/dashboard/header";
 import { StatsCardsSkeleton, UploadCardSkeleton } from "@/components/dashboard/section-skeleton";
+import { UploadZone, type SelectedFile } from "@/components/dashboard/upload-zone";
+// import { DetectionSettingsPanel } from "@/components/dashboard/detection-settings";
+import { AnalysisPanel } from "@/components/dashboard/analysis-panel";
 import { HistoryTable } from "@/components/dashboard/history-table";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { loadHistory, saveHistory, saveStats, computeStatsFromHistory } from "@/lib/storage";
-import type { HistoryEntry } from "@/types/detection";
+import { mockDistribution, mockModelPerformance } from "@/lib/mock-data";
+import type { DetectionResult, DetectionSettings, HistoryEntry } from "@/types/detection";
 
-export default function HistoryPage() {
-  const router = useRouter();
+import { HeroBanner } from "@/components/dashboard/hero-banner";
+import { StatsCards } from "@/components/dashboard/stats-cards";
+import { AboutSystem } from "@/components/dashboard/about-system";
 
-  const [activeNav, setActiveNav] = React.useState<NavKey>("history");
+
+const HISTORY_KEY = "flockvision:history";
+const STATS_KEY = "flockvision:stats";
+
+function loadFromStorage<T>(key: string): T | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveToStorage<T>(key: string, value: T) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // storage penuh / diblokir browser — abaikan saja
+  }
+}
+
+
+export default function AdminDashboardPage() {
+  
+  const [navTitles, setNavTitles] = React.useState<Record<NavKey, string>>({
+    dashboard: "Dashboard",
+    upload: "Unggah Deteksi",
+    history: "Riwayat Deteksi",
+    deteksi: "Deteksi",
+    settings: "Pengaturan",
+    help: "Bantuan",
+  });
+
+  // Warna thumbnail per status — sebelumnya hardcode di dalam fungsi,
+  // sekarang jadi state agar bisa dikustomisasi (mis. mode gelap/terang).
+const [statusColors, setStatusColors] = React.useState({
+  success: "#22c55e",
+  no_chickens: "#5d6b76",
+  failed: "#ef4444",
+});
+
+  // Layout / state navigasi
+  const [activeNav, setActiveNav] = React.useState<NavKey>("dashboard");
   const [collapsed, setCollapsed] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [loading, setLoading] = React.useState(true);
+  const [initialLoading, setInitialLoading] = React.useState(true);
+
+  const [stats, setStats] = React.useState({
+  imagesProcessed: 0,
+  totalChickensCounted: 0,
+  avgChickensPerImage: 0,
+  todaysUploads: 0,
+});
+
+  // State unggah / deteksi
+  const [selected, setSelected] = React.useState<SelectedFile | null>(null);
+  const [uploadError, setUploadError] = React.useState<string | null>(null);
+
+  // Pengaturan deteksi default — dipindah menjadi state di dalam komponen
+  // (sebelumnya konstanta DEFAULT_SETTINGS di luar komponen / hardcode).
+  const [settings, setSettings] = React.useState<DetectionSettings>({
+    confidenceThreshold: 50,
+    modelVersion: "flock-vision-v3",
+    mode: "accurate",
+    countMethod: "bounding_box",
+  });
+
+  const [isProcessing, setIsProcessing] = React.useState(false);
+  const [progress, setProgress] = React.useState(0);
+  const [result, setResult] = React.useState<DetectionResult | null>(null);
+
+  // State riwayat + statistik (dimuat dari localStorage, kosong jika belum ada data)
   const [history, setHistory] = React.useState<HistoryEntry[]>([]);
 
+  const uploadSectionRef = React.useRef<HTMLDivElement>(null);
+  const progressTimerRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Muat data tersimpan (history & stats) dari localStorage saat pertama kali render
   React.useEffect(() => {
-    setHistory(loadHistory());
-    setLoading(false);
+    const t = setTimeout(() => {
+      const savedHistory = loadFromStorage<HistoryEntry[]>(HISTORY_KEY);
+      const savedStats = loadFromStorage<typeof stats>(STATS_KEY);
+
+      setHistory(savedHistory ?? []);
+      if (savedStats) setStats(savedStats);
+
+      setInitialLoading(false);
+    }, 700);
+    return () => clearTimeout(t);
   }, []);
 
-  const stats = React.useMemo(() => computeStatsFromHistory(history), [history]);
+  // Simpan history ke localStorage setiap kali berubah (setelah load awal selesai,
+  // supaya tidak menimpa data lama dengan array kosong sebelum sempat dimuat)
+  React.useEffect(() => {
+    if (!initialLoading) saveToStorage(HISTORY_KEY, history);
+  }, [history, initialLoading]);
 
-  const handleClearHistory = () => {
-    const ok = window.confirm("Hapus semua riwayat deteksi? Tindakan ini tidak dapat dibatalkan.");
-    if (!ok) return;
-    setHistory([]);
-    saveHistory([]);
-    saveStats(computeStatsFromHistory([]));
+  // Simpan stats ke localStorage setiap kali berubah
+  React.useEffect(() => {
+    if (!initialLoading) saveToStorage(STATS_KEY, stats);
+  }, [stats, initialLoading]);
+
+  React.useEffect(() => {
+    return () => {
+      if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+    };
+  }, []);
+
+  const scrollToUpload = () => {
+    setActiveNav("upload");
+    uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+
+  const resetForNewUpload = () => {
+    setResult(null);
+    setUploadError(null);
+  };
+
+  const handleSelect = (file: SelectedFile | null) => {
+    setSelected(file);
+    resetForNewUpload();
+  };
+
+  const handleUploadAnother = () => {
+    if (selected) URL.revokeObjectURL(selected.previewUrl);
+    setSelected(null);
+    resetForNewUpload();
+  };
+
+  const runAnalysis = async () => {
+    if (!selected) {
+      setUploadError("Silakan unggah gambar terlebih dahulu.");
+      return;
+    }
+    if (selected.kind === "video") {
+      // Endpoint /api/detect saat ini hanya menganalisis satu frame gambar diam.
+      setUploadError("Analisis video memerlukan pengambilan frame terlebih dahulu — silakan unggah gambar diam.");
+      return;
+    }
+
+    setIsProcessing(true);
+    setResult(null);
+    setProgress(8);
+
+    // Animasikan progres secara halus selagi menunggu respons server,
+    // dibatasi tidak sampai 100% sebelum hasil benar-benar diterima.
+    progressTimerRef.current = setInterval(() => {
+      setProgress((p) => (p < 90 ? p + Math.random() * 9 : p));
+    }, 350);
+
+    const formData = new FormData();
+    formData.append("file", selected.file);
+    formData.append("confidenceThreshold", String(settings.confidenceThreshold));
+    formData.append("countMethod", settings.countMethod);
+    formData.append("modelVersion", settings.modelVersion);
+    formData.append("mode", settings.mode);
+
+    const startedAt = Date.now();
+
+    try {
+      const controller = new AbortController();
+      const res = await fetch("/api/detect", {
+        method: "POST",
+        body: formData,
+        signal: controller.signal,
+      });
+
+      let data: {
+        success: boolean;
+        status: DetectionResult["status"] | "no_file" | "unsupported_type" | "too_large";
+        message?: string;
+        reason?: string;
+        count?: number;
+        confidence?: number;
+        detections?: DetectionResult extends { status: "success"; detections: infer D } ? D : never;
+        processingTimeMs?: number;
+      };
+
+      try {
+        data = await res.json();
+        console.log(data)
+      } catch {
+        throw new Error("bad_json");
+      }
+
+      if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+      setProgress(100);
+
+      const elapsed = Date.now() - startedAt;
+      const finalResult = mapApiResponseToResult(data, elapsed);
+      setResult(finalResult);
+      applyResultSideEffects(finalResult, selected.file.name);
+    } catch (err) {
+      if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+      setProgress(100);
+
+      const isAbort = err instanceof DOMException && err.name === "AbortError";
+      const isNetwork = err instanceof TypeError; // fetch melempar TypeError saat gagal jaringan
+      const finalResult: DetectionResult = isAbort
+        ? { status: "timeout" }
+        : isNetwork
+          ? { status: "network_error" }
+          : { status: "api_error", message: "Layanan sedang tidak tersedia." };
+
+      setResult(finalResult);
+      applyResultSideEffects(finalResult, selected.file.name);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  function mapApiResponseToResult(
+    data: {
+      success: boolean;
+      status: string;
+      message?: string;
+      reason?: string;
+      count?: number;
+      confidence?: number;
+      detections?: DetectionResult extends { status: "success"; detections: infer D } ? D : never;
+      processingTimeMs?: number;
+    },
+    fallbackElapsed: number
+  ): DetectionResult {
+    const processingTimeMs = data.processingTimeMs ?? fallbackElapsed;
+
+    switch (data.status) {
+      case "success":
+        return {
+          status: "success",
+          count: data.count ?? 0,
+          confidence: data.confidence ?? 0,
+          detections: data.detections ?? [],
+          processingTimeMs,
+        };
+      case "no_chickens":
+        return { status: "no_chickens", processingTimeMs };
+      case "not_a_chicken":
+        return {
+          status: "not_a_chicken",
+          reason: data.reason ?? "Gambar ini tampaknya bukan gambar ayam.",
+          processingTimeMs,
+        };
+      case "too_large":
+      case "image_corrupted":
+        return { status: "image_corrupted" };
+      case "unsupported_type":
+        return { status: "api_error", message: "Jenis file ini tidak didukung." };
+      case "timeout":
+        return { status: "timeout" };
+      case "network_error":
+        return { status: "network_error" };
+      default:
+        return { status: "api_error", message: data.message || "Layanan AI sedang tidak tersedia." };
+    }
+  }
+
+  function applyResultSideEffects(finalResult: DetectionResult, filename: string) {
+    const entry: HistoryEntry = {
+      id: `det-${Date.now()}`,
+      date: new Date().toISOString(),
+      filename,
+      count: finalResult.status === "success" ? finalResult.count : null,
+      confidence: finalResult.status === "success" ? finalResult.confidence : null,
+      durationMs:
+        "processingTimeMs" in finalResult && finalResult.processingTimeMs ? finalResult.processingTimeMs : 0,
+      status:
+        finalResult.status === "success"
+          ? "success"
+          : finalResult.status === "no_chickens"
+            ? "no_chickens"
+            : finalResult.status === "not_a_chicken" || finalResult.status === "image_corrupted"
+              ? "invalid"
+              : "failed",
+      thumbnailColor:
+        finalResult.status === "success"
+          ? statusColors.success
+          : finalResult.status === "no_chickens"
+            ? statusColors.no_chickens
+            : statusColors.failed,
+    };
+    setHistory((h) => [entry, ...h]);
+
+    if (finalResult.status === "success") {
+      toast.success("Gambar berhasil dianalisis.", {
+        description: `${finalResult.count.toLocaleString("id-ID")} ekor ayam terdeteksi dengan tingkat keyakinan ${Math.round(finalResult.confidence * 100)}%.`,
+      });
+      setStats((s) => ({
+        imagesProcessed: s.imagesProcessed + 1,
+        totalChickensCounted: s.totalChickensCounted + finalResult.count,
+        avgChickensPerImage: Math.round(
+          (s.avgChickensPerImage * s.imagesProcessed + finalResult.count) / (s.imagesProcessed + 1)
+        ),
+        todaysUploads: s.todaysUploads + 1,
+      }));
+    } else if (finalResult.status === "no_chickens") {
+      toast.warning("Tidak ada ayam yang terdeteksi.", {
+        description: "Coba gambar lain atau sesuaikan sudut kamera.",
+      });
+    } else {
+      const message =
+        finalResult.status === "not_a_chicken"
+          ? "Gambar ini tidak mengandung ayam boiler."
+          : finalResult.status === "timeout"
+            ? "Proses deteksi memakan waktu lebih lama dari perkiraan."
+            : finalResult.status === "network_error"
+              ? "Tidak dapat terhubung ke server."
+              : finalResult.status === "image_corrupted"
+                ? "Gambar yang diunggah tidak dapat diproses."
+                : finalResult.status === "api_error"
+                  ? finalResult.message || "Layanan sedang tidak tersedia."
+                  : "Deteksi gagal.";
+      toast.error("Deteksi gagal.", { description: message });
+    }
+  }
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar
-        collapsed={collapsed}
-        onToggleCollapsed={() => setCollapsed((c) => !c)}
-        mobileOpen={mobileOpen}
-        onCloseMobile={() => setMobileOpen(false)}
-      />
+    <Sidebar
+      collapsed={collapsed}
+      onToggleCollapsed={() => setCollapsed((c) => !c)}
+      mobileOpen={mobileOpen}
+      onCloseMobile={() => setMobileOpen(false)}
+    />
+
       <div className="flex min-h-screen flex-1 flex-col">
-        <Header title="Riwayat Deteksi" onOpenMobileNav={() => setMobileOpen(true)} />
-
-
+        <Header title={navTitles[activeNav]} onOpenMobileNav={() => setMobileOpen(true)} />
         <main className="flex-1 space-y-8 px-4 py-6 sm:px-6 lg:px-8">
-          {/* Stat cards ringkasan seluruh riwayat */}
-          <section aria-label="Statistik riwayat deteksi">
-            {loading ? <StatsCardsSkeleton /> : <StatsCards {...stats} />}
-          </section>
-
-          {/* Tabel seluruh hasil deteksi */}
-          <section aria-label="Tabel hasil deteksi">
-            {loading ? (
-              <UploadCardSkeleton />
-            ) : (
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between gap-4">
-                  <div>
-                    <CardTitle>Semua Hasil Deteksi</CardTitle>
-                    <CardDescription>
-                      Data disimpan secara lokal di browser ini ({history.length} entri).
-                    </CardDescription>
-                  </div>
-                  {history.length > 0 && (
-                    <Button variant="outline" size="sm" onClick={handleClearHistory}>
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Hapus Riwayat
-                    </Button>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  <HistoryTable entries={history} onUploadFirst={() => router.push("/")} />
-                </CardContent>
-              </Card>
-            )}
-          </section>
-        </main>
+            <section aria-label="Statistik utama">
+              {initialLoading ? <StatsCardsSkeleton /> : <StatsCards {...stats} />}
+            </section>
+            {/* Riwayat deteksi */}
+            <section aria-label="Riwayat deteksi" className="grid gap-6 grid-cols-3">
+              <div className="col-span-3">
+                <HistoryTable entries={history} onUploadFirst={scrollToUpload} />
+              </div>
+            </section>
+          </main>
       </div>
     </div>
   );

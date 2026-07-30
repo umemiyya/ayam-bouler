@@ -190,7 +190,7 @@ export default function AdminDashboardPage() {
         ? { status: "timeout" }
         : isNetwork
           ? { status: "network_error" }
-          : { status: "api_error", message: "AI service is currently unavailable." };
+          : { status: "api_error", message: "Terdapat kesalahan!." };
 
       setResult(finalResult);
       applyResultSideEffects(finalResult, selected.file.name);
@@ -237,7 +237,7 @@ export default function AdminDashboardPage() {
       case "network_error":
         return { status: "network_error" };
       default:
-        return { status: "api_error", message: data.message || "AI service is currently unavailable." };
+        return { status: "api_error", message: data.message || "Terdapat kesalahan." };
     }
   }
 
@@ -294,7 +294,7 @@ export default function AdminDashboardPage() {
               : finalResult.status === "image_corrupted"
                 ? "The uploaded image cannot be processed."
                 : finalResult.status === "api_error"
-                  ? finalResult.message || "AI service is currently unavailable."
+                  ? finalResult.message || "Terdapat kesalahan."
                   : "Detection failed.";
       toast.error("Detection failed.", { description: message });
     }

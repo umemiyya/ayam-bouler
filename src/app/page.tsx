@@ -10,15 +10,36 @@ import { UploadZone, type SelectedFile } from "@/components/dashboard/upload-zon
 import { AnalysisPanel } from "@/components/dashboard/analysis-panel";
 import { HistoryTable } from "@/components/dashboard/history-table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { generateMockHistory, mockStats, mockDistribution, mockModelPerformance } from "@/lib/mock-data";
+import { mockDistribution, mockModelPerformance } from "@/lib/mock-data";
 import type { DetectionResult, DetectionSettings, HistoryEntry } from "@/types/detection";
-import { useRouter } from "next/navigation";
 
 import { HeroBanner } from "@/components/dashboard/hero-banner";
 import { StatsCards } from "@/components/dashboard/stats-cards";
-import { DistributionChart } from "@/components/dashboard/distribution-chart";
-import { ModelPerformance } from "@/components/dashboard/model-performance";
 import { AboutSystem } from "@/components/dashboard/about-system";
+
+
+const HISTORY_KEY = "flockvision:history";
+const STATS_KEY = "flockvision:stats";
+
+function loadFromStorage<T>(key: string): T | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveToStorage<T>(key: string, value: T) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // storage penuh / diblokir browser — abaikan saja
+  }
+}
+
 
 export default function AdminDashboardPage() {
   
@@ -45,6 +66,13 @@ const [statusColors, setStatusColors] = React.useState({
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [initialLoading, setInitialLoading] = React.useState(true);
 
+  const [stats, setStats] = React.useState({
+  imagesProcessed: 0,
+  totalChickensCounted: 0,
+  avgChickensPerImage: 0,
+  todaysUploads: 0,
+});
+
   // State unggah / deteksi
   const [selected, setSelected] = React.useState<SelectedFile | null>(null);
   const [uploadError, setUploadError] = React.useState<string | null>(null);
@@ -62,20 +90,36 @@ const [statusColors, setStatusColors] = React.useState({
   const [progress, setProgress] = React.useState(0);
   const [result, setResult] = React.useState<DetectionResult | null>(null);
 
-  // State riwayat + statistik (diisi dengan data mock yang realistis)
+  // State riwayat + statistik (dimuat dari localStorage, kosong jika belum ada data)
   const [history, setHistory] = React.useState<HistoryEntry[]>([]);
-  const [stats, setStats] = React.useState(mockStats);
 
   const uploadSectionRef = React.useRef<HTMLDivElement>(null);
   const progressTimerRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Muat data tersimpan (history & stats) dari localStorage saat pertama kali render
   React.useEffect(() => {
     const t = setTimeout(() => {
-      setHistory(generateMockHistory());
+      const savedHistory = loadFromStorage<HistoryEntry[]>(HISTORY_KEY);
+      const savedStats = loadFromStorage<typeof stats>(STATS_KEY);
+
+      setHistory(savedHistory ?? []);
+      if (savedStats) setStats(savedStats);
+
       setInitialLoading(false);
     }, 700);
     return () => clearTimeout(t);
   }, []);
+
+  // Simpan history ke localStorage setiap kali berubah (setelah load awal selesai,
+  // supaya tidak menimpa data lama dengan array kosong sebelum sempat dimuat)
+  React.useEffect(() => {
+    if (!initialLoading) saveToStorage(HISTORY_KEY, history);
+  }, [history, initialLoading]);
+
+  // Simpan stats ke localStorage setiap kali berubah
+  React.useEffect(() => {
+    if (!initialLoading) saveToStorage(STATS_KEY, stats);
+  }, [stats, initialLoading]);
 
   React.useEffect(() => {
     return () => {

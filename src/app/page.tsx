@@ -80,7 +80,7 @@ const [statusColors, setStatusColors] = React.useState({
   // Pengaturan deteksi default — dipindah menjadi state di dalam komponen
   // (sebelumnya konstanta DEFAULT_SETTINGS di luar komponen / hardcode).
   const [settings, setSettings] = React.useState<DetectionSettings>({
-    confidenceThreshold: 50,
+    confidenceThreshold: 80,
     modelVersion: "flock-vision-v3",
     mode: "accurate",
     countMethod: "bounding_box",

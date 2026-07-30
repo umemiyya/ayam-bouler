@@ -25,7 +25,7 @@ const NAV_TITLES: Record<NavKey, string> = {
 };
 
 const DEFAULT_SETTINGS: DetectionSettings = {
-  confidenceThreshold: 50,
+  confidenceThreshold: 90,
   modelVersion: "flock-vision-v3",
   mode: "accurate",
   countMethod: "bounding_box",

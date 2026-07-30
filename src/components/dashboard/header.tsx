@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "../features/logout-button";
 import { ProfilClient } from "../features/profil-client";
+import Image from "next/image";
 
 interface HeaderProps {
   title: string;
@@ -39,21 +40,32 @@ export function Header({ title, onOpenMobileNav, notificationCount = 3 }: Header
         Ayam Boiler
       </h1>
 
-      <div className="ml-auto flex items-center gap-2 sm:gap-3">
-        <div className="hidden">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-2" />
-          <Input
-            type="search"
-            placeholder="Search detections, files..."
-            aria-label="Search"
-            className="w-48 pl-8 lg:w-64"
+    <div className="ml-auto flex items-center gap-2 sm:gap-3">
+      {/* Dua gambar kecil sejajar, mepet ke logout button */}
+      <div className="flex items-center gap-1.5">
+        <div className="relative h-8 w-8 overflow-hidden rounded-xl sm:h-9 sm:w-9">
+          <Image
+            src="/handayani.png"
+            alt="Detail ayam broiler 1"
+            fill
+            className="object-contain p-1"
           />
         </div>
-        <div>
-          {/* <ProfilClient username={} /> */}
-          <LogoutButton />
+        <div className="relative h-8 w-8 overflow-hidden rounded-xl sm:h-9 sm:w-9">
+          <Image
+            src="/bulukumba.png"
+            alt="Detail ayam broiler 2"
+            fill
+            className="object-contain p-1"
+          />
         </div>
       </div>
+
+      <div>
+        {/* <ProfilClient username={} /> */}
+        <LogoutButton />
+      </div>
+    </div>
     </header>
   );
 }

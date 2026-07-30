@@ -354,11 +354,6 @@ const [statusColors, setStatusColors] = React.useState({
               )}
             </div>
           </section>
-           {/* <section className="flex flex-col gap-6">
-              <DistributionChart data={mockDistribution} />
-              <ModelPerformance metrics={mockModelPerformance} />
-              
-            </section> */}
           </div>
 
             {/* Riwayat deteksi */}

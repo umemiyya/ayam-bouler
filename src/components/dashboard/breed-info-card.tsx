@@ -26,26 +26,6 @@ export function BreedInfoCard() {
           </p>
         </div>
       </div>
-
-      {/* Dua gambar kecil sejajar */}
-      <div className="grid grid-cols-2 gap-2">
-        <div className="relative h-20 rounded-xl">
-          <Image
-            src="/handayani.png"
-            alt="Detail ayam broiler 1"
-            fill
-            className="object-contain p-1.5"
-          />
-        </div>
-        <div className="relative h-20  rounded-xl">
-          <Image
-            src="/bulukumba.png"
-            alt="Detail ayam broiler 2"
-            fill
-            className="object-contain p-1.5"
-          />
-        </div>
-      </div>
     </div>
   );
 }

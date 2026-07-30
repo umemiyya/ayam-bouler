@@ -153,7 +153,7 @@ export function StatsCards({
   });
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <StatCard
         icon={Video}
         iconBg="#22c55e"
@@ -167,13 +167,6 @@ export function StatsCards({
         label="Total Ayam Terdeteksi"
         value={totalChickensCounted.toLocaleString("id-ID")}
         suffix="Ekor keseluruhan"
-      />
-      <StatCard
-        icon={TrendingUp}
-        iconBg="#3b82f6"
-        label="Rata-rata Akurasi"
-        value={`${avgChickensPerImage}%`}
-        suffix="Akurasi Model"
       />
       <StatCard
         icon={Calendar}

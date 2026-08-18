@@ -32,56 +32,14 @@ interface AnalysisPanelProps {
   onUploadAnother: () => void;
 }
 
-// function BoundingBoxPreview({
-//   imageUrl,
-//   detections,
-// }: {
-//   imageUrl: string;
-//   detections: Extract<DetectionResult, { status: "success" }>["detections"];
-// }) {
-//   return (
-//     <div className="relative overflow-hidden rounded-lg border border-border-subtle bg-black/40">
-//       {/* eslint-disable-next-line @next/next/no-img-element */}
-//       <img src={imageUrl} alt="Analyzed upload with detection boxes" className="block w-full" />
-//       {detections.map((d) => (
-//         <span
-//           key={d.id}
-//           className="absolute rounded-sm border-2 border-accent shadow-[0_0_0_1px_rgba(0,0,0,0.4)]"
-//           style={{
-//             left: `${d.x}%`,
-//             top: `${d.y}%`,
-//             width: `${d.width}%`,
-//             height: `${d.height}%`,
-//           }}
-//         />
-//       ))}
-//     </div>
-//   );
-// }
-function BoundingBoxPreview({
-  imageUrl,
-  detections,
-}: {
-  imageUrl: string;
-  detections: Extract<DetectionResult, { status: "success" }>["detections"];
-}) {
+// Menampilkan gambar hasil deteksi LANGSUNG dari Roboflow (result.imageBase64) —
+// bounding box sudah digambar oleh Roboflow sendiri, jadi di sini tidak ada lagi
+// overlay manual berbasis persentase posisi.
+function AnnotatedResultPreview({ imageBase64 }: { imageBase64: string }) {
   return (
     <div className="relative overflow-hidden rounded-lg border border-border-subtle bg-black/40">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={imageUrl} alt="Analyzed upload with detection boxes" className="block w-full" />
-      {detections.map((d) => (
-        <span
-          key={d.id}
-          className="absolute border-yellow-300 shadow-[0_0_0_1px_rgba(0,0,0,0.4)]"
-          style={{
-            left: `${d.x}%`,
-            top: `${d.y}%`,
-            width: `${d.width}%`,
-            height: `${d.height}%`,
-          }}
-        >
-        </span>
-      ))}
+      <img src={imageBase64} alt="Hasil deteksi dengan bounding box dari Roboflow" className="block w-full" />
     </div>
   );
 }
@@ -152,12 +110,7 @@ export function AnalysisPanel({
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25 }}
           >
-            <ResultView
-              result={result}
-              previewUrl={selected?.kind === "image" ? selected.previewUrl : null}
-              onRetry={onRetry}
-              onUploadAnother={onUploadAnother}
-            />
+            <ResultView result={result} onRetry={onRetry} onUploadAnother={onUploadAnother} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -167,18 +120,16 @@ export function AnalysisPanel({
 
 function ResultView({
   result,
-  previewUrl,
   onRetry,
   onUploadAnother,
 }: {
   result: DetectionResult;
-  previewUrl: string | null;
   onRetry: () => void;
   onUploadAnother: () => void;
 }) {
   switch (result.status) {
     case "success":
-      return <SuccessResult result={result} previewUrl={previewUrl} onUploadAnother={onUploadAnother} />;
+      return <SuccessResult result={result} onUploadAnother={onUploadAnother} />;
 
     case "no_chickens":
       return (
@@ -286,11 +237,9 @@ function ResultView({
 
 function SuccessResult({
   result,
-  previewUrl,
   onUploadAnother,
 }: {
   result: Extract<DetectionResult, { status: "success" }>;
-  previewUrl: string | null;
   onUploadAnother: () => void;
 }) {
   const confidencePct = Math.round(result.confidence * 100);
@@ -307,13 +256,14 @@ function SuccessResult({
         </p>
         <p className="text-sm text-muted">ayam terdeteksi</p>
       </div>
-
-      {previewUrl && (
+      {/* @ts-expect-error - imageBase64 is optional */}
+      {result.imageBase64 && (
         <div className="border-b border-border-subtle p-4">
           <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-2">
-            Pratinjau Bounding Box
+            Hasil Deteksi (Roboflow)
           </p>
-          <BoundingBoxPreview imageUrl={previewUrl} detections={result.detections} />
+          {/* @ts-expect-error - imageBase64 is optional */}
+          <AnnotatedResultPreview imageBase64={result.imageBase64} />
         </div>
       )}
 

@@ -77,8 +77,9 @@ const [statusColors, setStatusColors] = React.useState({
   const [selected, setSelected] = React.useState<SelectedFile | null>(null);
   const [uploadError, setUploadError] = React.useState<string | null>(null);
 
-  // Pengaturan deteksi default — dipindah menjadi state di dalam komponen
-  // (sebelumnya konstanta DEFAULT_SETTINGS di luar komponen / hardcode).
+  // Pengaturan deteksi default — tidak lagi dikirim ke API baru (Roboflow workflow
+  // tidak menerima parameter ini), tapi state dipertahankan agar panel pengaturan
+  // (saat ini di-comment) tidak perlu diubah kalau nanti diaktifkan lagi.
   const [settings, setSettings] = React.useState<DetectionSettings>({
     confidenceThreshold: 90,
     modelVersion: "flock-vision-v3",
@@ -154,7 +155,7 @@ const [statusColors, setStatusColors] = React.useState({
       return;
     }
     if (selected.kind === "video") {
-      // Endpoint /api/detect saat ini hanya menganalisis satu frame gambar diam.
+      // Endpoint /api/detect-roboflow saat ini hanya menganalisis satu frame gambar diam.
       setUploadError("Analisis video memerlukan pengambilan frame terlebih dahulu — silakan unggah gambar diam.");
       return;
     }
@@ -169,18 +170,17 @@ const [statusColors, setStatusColors] = React.useState({
       setProgress((p) => (p < 90 ? p + Math.random() * 9 : p));
     }, 350);
 
+    // API baru (/api/detect-roboflow) hanya butuh file gambar — parameter
+    // confidenceThreshold/countMethod/modelVersion/mode tidak dipakai lagi
+    // karena konfigurasi model sekarang ada di sisi Roboflow workflow.
     const formData = new FormData();
     formData.append("file", selected.file);
-    formData.append("confidenceThreshold", String(settings.confidenceThreshold));
-    formData.append("countMethod", settings.countMethod);
-    formData.append("modelVersion", settings.modelVersion);
-    formData.append("mode", settings.mode);
 
     const startedAt = Date.now();
 
     try {
       const controller = new AbortController();
-      const res = await fetch("/api/detect", {
+      const res = await fetch("/api/deteksi", {
         method: "POST",
         body: formData,
         signal: controller.signal,
@@ -194,6 +194,7 @@ const [statusColors, setStatusColors] = React.useState({
         count?: number;
         confidence?: number;
         detections?: DetectionResult extends { status: "success"; detections: infer D } ? D : never;
+        imageBase64?: string | null;
         processingTimeMs?: number;
       };
 
@@ -239,6 +240,7 @@ const [statusColors, setStatusColors] = React.useState({
       count?: number;
       confidence?: number;
       detections?: DetectionResult extends { status: "success"; detections: infer D } ? D : never;
+      imageBase64?: string | null;
       processingTimeMs?: number;
     },
     fallbackElapsed: number
@@ -252,6 +254,10 @@ const [statusColors, setStatusColors] = React.useState({
           count: data.count ?? 0,
           confidence: data.confidence ?? 0,
           detections: data.detections ?? [],
+          // Gambar hasil visualisasi (bounding box) dari Roboflow — dipakai
+          // AnalysisPanel untuk ditampilkan, tidak dipersist ke history (lihat catatan di bawah).
+          // @ts-expect-error
+          imageBase64: data.imageBase64 ?? null,
           processingTimeMs,
         };
       case "no_chickens":
@@ -299,6 +305,12 @@ const [statusColors, setStatusColors] = React.useState({
           : finalResult.status === "no_chickens"
             ? statusColors.no_chickens
             : statusColors.failed,
+      // Catatan: gambar hasil deteksi (base64) SENGAJA tidak ikut disimpan di sini.
+      // localStorage punya kuota kecil (~5-10MB per origin) — kalau tiap entry riwayat
+      // menyimpan gambar penuh, kuota akan cepat habis dan saveToStorage akan diam-diam
+      // gagal (lihat catch kosong di saveToStorage), menyebabkan riwayat hilang tanpa error.
+      // Gambar hasil hanya ditahan sementara di state `result` (tidak dipersist) untuk
+      // ditampilkan di AnalysisPanel selama sesi berjalan.
     };
     setHistory((h) => [entry, ...h]);
 

@@ -39,7 +39,7 @@ function AnnotatedResultPreview({ imageBase64 }: { imageBase64: string }) {
   return (
     <div className="relative overflow-hidden rounded-lg border border-border-subtle bg-black/40">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={imageBase64} alt="Hasil deteksi dengan bounding box dari Roboflow" className="block w-full" />
+      <img src={imageBase64} alt="Hasil deteksi dengan bounding box" className="block w-full" />
     </div>
   );
 }
@@ -260,7 +260,7 @@ function SuccessResult({
       {result.imageBase64 && (
         <div className="border-b border-border-subtle p-4">
           <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-2">
-            Hasil Deteksi (Roboflow)
+            Hasil Deteksi
           </p>
           {/* @ts-expect-error - imageBase64 is optional */}
           <AnnotatedResultPreview imageBase64={result.imageBase64} />
